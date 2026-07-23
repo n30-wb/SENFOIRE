@@ -1,0 +1,105 @@
+@startuml
+' ===== DIAGRAMME D'ACTIVITÉ 2 : Inscription & Validation =====
+' Plateforme SENFOIRE - Foire Internationale Virtuelle
+
+skinparam activity {
+  BackgroundColor #E3F2FD
+  BorderColor #1E88E5
+  FontSize 12
+}
+skinparam activityDiamond {
+  BackgroundColor #FFF9C4
+  BorderColor #F9A825
+  FontSize 11
+}
+skinparam swimlane {
+  BackgroundColor #F5F5F5
+  BorderColor #90A4AE
+  FontSize 13
+}
+skinparam arrow {
+  Color #455A64
+  FontSize 11
+}
+
+|Utilisateur|
+start
+:Choisir son rôle\n(Vendeur ou Livreur);
+:Remplir le formulaire\nd'inscription\n(nom, prénom, email,\ntéléphone, CNI);
+
+if (Rôle = Vendeur ?) then (oui)
+  :Saisir le nom\nde son stand;
+  :Décrire ses\nproduits;
+endif
+
+if (Rôle = Livreur ?) then (oui)
+  :Saisir la date\net lieu de naissance;
+endif
+
+:Uploader la photo\nde la CNI;
+:Choisir sa position\nsur la carte;
+:Soumettre\nl'inscription;
+
+|Système|
+:Vérifier la validité\ndes données;
+
+if (Données\nvalides ?) then (oui)
+  :Créer l'inscription\n(statut: en_attente);
+  :Notifier tous\nles administrateurs;
+
+  |Administrateur|
+  :Recevoir la notification\nde nouvelle inscription;
+  :Consulter la liste\ndes inscriptions en attente;
+  :Ouvrir le dossier\nde l'inscription;
+  :Vérifier les informations\n(stand, CNI, photo);
+
+  if (Approuver ?) then (oui)
+    :Approuver\nl'inscription;
+
+    |Système|
+    :Créer le compte\nutilisateur;
+
+    if (Rôle = Vendeur ?) then (oui)
+      :Créer le stand\navec le nom renseigné;
+    else (livreur)
+      :Créer le profil\nlivreur;
+    endif
+
+    :Mettre à jour le statut\n(approuvé);
+    :Notifier l'utilisateur;
+
+    |Utilisateur|
+    :Recevoir la notification\nd'approbation;
+    :Accéder à la page\nde finalisation;
+    :Choisir son identifiant\nde connexion;
+    :Définir son\nmot de passe;
+
+    |Système|
+    :Créer le token\nd'authentification;
+    :Rediriger vers\nle dashboard;
+
+    |Utilisateur|
+    :Accéder à son\nespace personnel;
+
+  else (non)
+    :Rejeter\nl'inscription;
+
+    |Système|
+    :Mettre à jour le statut\n(rejeté);
+    :Notifier l'utilisateur\navec le motif;
+
+    |Utilisateur|
+    :Recevoir la notification\nde rejet;
+  endif
+else (non)
+  |Système|
+  :Retourner les erreurs\nde validation;
+
+  |Utilisateur|
+  :Corriger\nles erreurs;
+  :Resoumettre;
+endif
+
+stop
+
+@enduml
